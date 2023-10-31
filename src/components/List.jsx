@@ -1,5 +1,8 @@
+// List.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import Card from "./Card";
+import DataVisualization from "./DataVisualization"; // Make sure to create this component
+import { useNavigate } from "react-router-dom"; // Import useNavigate hook for programmatic navigation
 
 const CLIENT_ID = "95TLLWq3i5Zug5R33a5BSQiTqED3zwKUgQYNSJseWBGU6X4pHJ";
 const CLIENT_SECRET = "hhUh3IH9QSwEJ2ZgY8lb7MDjEKRQIGw3xtOHbF5X";
@@ -39,6 +42,8 @@ function List() {
   const [genderFilter, setGenderFilter] = useState("");
   const [breedFilter, setBreedFilter] = useState("");
 
+  const navigate = useNavigate(); // Hook for navigation
+
   useEffect(() => {
     async function fetchData() {
       const fetchedToken = await fetchAccessToken();
@@ -70,81 +75,28 @@ function List() {
       );
   }, [animals, searchTerm, typeFilter, ageFilter, genderFilter, breedFilter]);
 
-  const totalAnimals = filteredAnimals.length;
-  const youngAnimalsCount = filteredAnimals.filter(
-    (animal) => animal.age === "young"
-  ).length;
-  const maleAnimalsCount = filteredAnimals.filter(
-    (animal) => animal.gender === "Male"
-  ).length;
-  const femaleAnimalsCount = filteredAnimals.filter(
-    (animal) => animal.gender === "Female"
-  ).length;
-  const uniqueBreeds = new Set(
-    filteredAnimals.map((animal) => animal.breeds.primary)
-  ).size;
+  // Data for visualization (example: gender distribution)
+  const visualizationData = useMemo(() => {
+    const genderData = animals.reduce((acc, animal) => {
+      const gender = animal.gender || "Unknown";
+      if (!acc[gender]) {
+        acc[gender] = 1;
+      } else {
+        acc[gender] += 1;
+      }
+      return acc;
+    }, {});
 
-  const availableBreeds = Array.from(
-    new Set(animals.map((animal) => animal.breeds.primary))
-  );
+    return Object.entries(genderData).map(([key, value]) => ({
+      name: key,
+      value,
+    }));
+  }, [animals]);
 
   return (
     <div>
-      {/* Summary statistics */}
-      <div>
-        <p>Total animals: {totalAnimals}</p>
-        <p>Number of young animals: {youngAnimalsCount}</p>
-        <p>Number of male animals: {maleAnimalsCount}</p>
-        <p>Number of female animals: {femaleAnimalsCount}</p>
-        <p>Unique breeds: {uniqueBreeds}</p>
-      </div>
-
-      {/* Search bar */}
-      <input
-        type="text"
-        placeholder="Search by name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-
-      {/* Filters */}
-      <select
-        value={typeFilter}
-        onChange={(e) => setTypeFilter(e.target.value)}
-      >
-        <option value="">All Types</option>
-        <option value="dog">Dog</option>
-        <option value="cat">Cat</option>
-        {/* ... other types ... */}
-      </select>
-
-      <select value={ageFilter} onChange={(e) => setAgeFilter(e.target.value)}>
-        <option value="">All Ages</option>
-        <option value="young">Young</option>
-        <option value="adult">Adult</option>
-        {/* ... other ages ... */}
-      </select>
-
-      <select
-        value={genderFilter}
-        onChange={(e) => setGenderFilter(e.target.value)}
-      >
-        <option value="">All Genders</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-      </select>
-
-      <select
-        value={breedFilter}
-        onChange={(e) => setBreedFilter(e.target.value)}
-      >
-        <option value="">All Breeds</option>
-        {availableBreeds.map((breed) => (
-          <option value={breed.toLowerCase()} key={breed}>
-            {breed}
-          </option>
-        ))}
-      </select>
+      {/* Render the DataVisualization component and pass the data to it */}
+      <DataVisualization data={visualizationData} />
 
       {/* Animal list */}
       {filteredAnimals.map((animal) => (
