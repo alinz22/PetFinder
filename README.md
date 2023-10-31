@@ -1,6 +1,6 @@
 # Web Development Project 6 - *Name of App Here*
 
-Submitted by: **Your Name Here**
+Submitted by: **Alan Mong**
 
 This web app: **insert description**
 
