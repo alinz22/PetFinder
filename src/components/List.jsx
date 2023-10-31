@@ -1,8 +1,8 @@
 // List.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import Card from "./Card";
-import DataVisualization from "./DataVisualization"; // Make sure to create this component
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook for programmatic navigation
+import DataVisualization from "./DataVisualization"; // Ensure this component is created
+import { useNavigate } from "react-router-dom"; // Import for programmatic navigation
 
 const CLIENT_ID = "95TLLWq3i5Zug5R33a5BSQiTqED3zwKUgQYNSJseWBGU6X4pHJ";
 const CLIENT_SECRET = "hhUh3IH9QSwEJ2ZgY8lb7MDjEKRQIGw3xtOHbF5X";
@@ -42,7 +42,7 @@ function List() {
   const [genderFilter, setGenderFilter] = useState("");
   const [breedFilter, setBreedFilter] = useState("");
 
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
@@ -75,15 +75,10 @@ function List() {
       );
   }, [animals, searchTerm, typeFilter, ageFilter, genderFilter, breedFilter]);
 
-  // Data for visualization (example: gender distribution)
   const visualizationData = useMemo(() => {
     const genderData = animals.reduce((acc, animal) => {
       const gender = animal.gender || "Unknown";
-      if (!acc[gender]) {
-        acc[gender] = 1;
-      } else {
-        acc[gender] += 1;
-      }
+      acc[gender] = (acc[gender] || 0) + 1;
       return acc;
     }, {});
 
@@ -93,14 +88,81 @@ function List() {
     }));
   }, [animals]);
 
+  // Handlers for dropdown changes
+  const handleTypeFilterChange = (e) => setTypeFilter(e.target.value);
+  const handleAgeFilterChange = (e) => setAgeFilter(e.target.value);
+  const handleGenderFilterChange = (e) => setGenderFilter(e.target.value);
+  const handleBreedFilterChange = (e) => setBreedFilter(e.target.value);
+
+  // Function to navigate to the Detail view of an animal
+  const handleCardClick = (animalId) => {
+    navigate(`/animal/${animalId}`);
+  };
+
   return (
     <div>
-      {/* Render the DataVisualization component and pass the data to it */}
       <DataVisualization data={visualizationData} />
 
-      {/* Animal list */}
+      <div>
+        <p>Total animals: {filteredAnimals.length}</p>
+        {/* ...other summary statistics */}
+      </div>
+
+      <input
+        type="text"
+        placeholder="Search by name..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      <select value={typeFilter} onChange={handleTypeFilterChange}>
+        <option value="">All Types</option>
+        {Array.from(new Set(animals.map((animal) => animal.type))).map(
+          (type, index) => (
+            <option key={index} value={type}>
+              {type}
+            </option>
+          )
+        )}
+      </select>
+
+      <select value={ageFilter} onChange={handleAgeFilterChange}>
+        <option value="">All Ages</option>
+        {Array.from(new Set(animals.map((animal) => animal.age))).map(
+          (age, index) => (
+            <option key={index} value={age}>
+              {age}
+            </option>
+          )
+        )}
+      </select>
+
+      <select value={genderFilter} onChange={handleGenderFilterChange}>
+        <option value="">All Genders</option>
+        {Array.from(new Set(animals.map((animal) => animal.gender))).map(
+          (gender, index) => (
+            <option key={index} value={gender}>
+              {gender}
+            </option>
+          )
+        )}
+      </select>
+
+      <select value={breedFilter} onChange={handleBreedFilterChange}>
+        <option value="">All Breeds</option>
+        {Array.from(
+          new Set(animals.map((animal) => animal.breeds.primary))
+        ).map((breed, index) => (
+          <option key={index} value={breed}>
+            {breed}
+          </option>
+        ))}
+      </select>
+
       {filteredAnimals.map((animal) => (
-        <Card key={animal.id} animal={animal} />
+        <div key={animal.id} onClick={() => handleCardClick(animal.id)}>
+          <Card animal={animal} />
+        </div>
       ))}
     </div>
   );
